@@ -1,52 +1,43 @@
-# Prerequisites
-*.d
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+#define SHIFT 3
 
-# Linker output
-*.ilk
-*.map
-*.exp
+int main() {
+    int fd_in, fd_out;
+    char ch;
 
-# Precompiled Headers
-*.gch
-*.pch
+    // Open the input file (input.txt) in read-only mode
+    fd_in = open("input.txt", O_RDONLY);
+    if (fd_in == -1) {
+        printf("Error opening input file\n");
+        return 1;
+    }
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+    // Open or create the output file (encrypted.txt) with write permissions
+    fd_out = open("encrypted.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd_out == -1) {
+        printf("Error opening output file\n");
+        close(fd_in); // Close input file before exiting
+        return 1;
+    }
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+    // Read from input file, encrypt, and write to output file
+    while (read(fd_in, &ch, 1) > 0) {
+        if (ch >= 'A' && ch <= 'Z') {
+            ch = ((ch - 'A' + SHIFT) % 26) + 'A';
+        } else if (ch >= 'a' && ch <= 'z') {
+            ch = ((ch - 'a' + SHIFT) % 26) + 'a';
+        }
+        write(fd_out, &ch, 1);
+    }
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+    // Close the files
+    close(fd_in);
+    close(fd_out);
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+    printf("Encryption complete\n");
+    return 0;
+}
